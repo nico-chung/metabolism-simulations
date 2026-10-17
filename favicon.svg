@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- A six-membered ring with one tagged atom, in the app's paper, ink and tag-1 tokens: bold enough to read at 16 px. -->
+  <rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="#FBFAF7" stroke="#2F3437" stroke-width="3"/>
+  <path d="M30 13 L46.5 22.5 L46.5 41.5 L30 51 L13.5 41.5 L13.5 22.5 Z" fill="none" stroke="#2F3437" stroke-width="7" stroke-linejoin="round"/>
+  <circle cx="46.5" cy="22.5" r="10" fill="#FF3D7F" stroke="#2F3437" stroke-width="3"/>
+</svg>

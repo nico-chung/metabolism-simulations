@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>metasim: interactive simulation of cellular respiration and photosynthesis</title>
+  <meta name="description" content="Atom-level simulation of cellular respiration and photosynthesis: glycolysis, the citric acid cycle, the electron transport chain and the Calvin cycle.">
+  <link rel="canonical" href="https://nico-chung.github.io/metasim/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="metasim">
+  <meta property="og:title" content="metasim: interactive simulation of cellular respiration and photosynthesis">
+  <meta property="og:description" content="Atom-level simulation of cellular respiration and photosynthesis: glycolysis, the citric acid cycle, the electron transport chain and the Calvin cycle.">
+  <meta property="og:url" content="https://nico-chung.github.io/metasim/">
+  <meta property="og:image" content="https://nico-chung.github.io/metasim/preview-image.png">
+  <meta property="og:image:width" content="2400">
+  <meta property="og:image:height" content="1260">
+  <meta property="og:image:alt" content="metasim: a tagged carbon atom at pyruvate dehydrogenase in a human cell, with the guide's card explaining the reaction.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="metasim: interactive simulation of cellular respiration and photosynthesis">
+  <meta name="twitter:description" content="Atom-level simulation of cellular respiration and photosynthesis: glycolysis, the citric acid cycle, the electron transport chain and the Calvin cycle.">
+  <meta name="twitter:image" content="https://nico-chung.github.io/metasim/preview-image.png">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"metasim","url":"https://nico-chung.github.io/metasim/","description":"Atom-level simulation of cellular respiration and photosynthesis: glycolysis, the citric acid cycle, the electron transport chain and the Calvin cycle.","applicationCategory":"EducationalApplication","operatingSystem":"Any (runs in a web browser)","isAccessibleForFree":true,"educationalLevel":"First-year university","inLanguage":"en","about":["Cellular respiration","Photosynthesis","Glycolysis","Citric acid cycle","Electron transport chain","Calvin cycle","Fermentation"],"license":"https://opensource.org/licenses/MIT","image":"https://nico-chung.github.io/metasim/preview-image.png","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/app.css">
+  <link rel="modulepreload" href="src/chem/describe.js">
+  <link rel="modulepreload" href="src/chem/elements.js">
+  <link rel="modulepreload" href="src/chem/layout.js">
+  <link rel="modulepreload" href="src/chem/oxidation.js">
+  <link rel="modulepreload" href="src/chem/reactions/bacterium.js">
+  <link rel="modulepreload" href="src/chem/reactions/c4.js">
+  <link rel="modulepreload" href="src/chem/reactions/cam.js">
+  <link rel="modulepreload" href="src/chem/reactions/catalog.js">
+  <link rel="modulepreload" href="src/chem/reactions/compile.js">
+  <link rel="modulepreload" href="src/chem/reactions/compound.js">
+  <link rel="modulepreload" href="src/chem/reactions/fermentation.js">
+  <link rel="modulepreload" href="src/chem/reactions/glycolysis.js">
+  <link rel="modulepreload" href="src/chem/reactions/photosynthesis.js">
+  <link rel="modulepreload" href="src/chem/reactions/respiration.js">
+  <link rel="modulepreload" href="src/chem/species/carriers.js">
+  <link rel="modulepreload" href="src/chem/species/chain.js">
+  <link rel="modulepreload" href="src/chem/species/citrate.js">
+  <link rel="modulepreload" href="src/chem/species/cycle.js">
+  <link rel="modulepreload" href="src/chem/species/fermentation.js">
+  <link rel="modulepreload" href="src/chem/species/glucose.js">
+  <link rel="modulepreload" href="src/chem/species/glycolysis.js">
+  <link rel="modulepreload" href="src/chem/species/index.js">
+  <link rel="modulepreload" href="src/chem/species/nitrogen.js">
+  <link rel="modulepreload" href="src/chem/species/oxygen.js">
+  <link rel="modulepreload" href="src/chem/species/photosynthesis.js">
+  <link rel="modulepreload" href="src/main.js">
+  <link rel="modulepreload" href="src/narration/journey.js">
+  <link rel="modulepreload" href="src/narration/photosynthesis.js">
+  <link rel="modulepreload" href="src/narration/respiration.js">
+  <link rel="modulepreload" href="src/render/belts.js">
+  <link rel="modulepreload" href="src/render/camera.js">
+  <link rel="modulepreload" href="src/render/color.js">
+  <link rel="modulepreload" href="src/render/follow.js">
+  <link rel="modulepreload" href="src/render/glow.js">
+  <link rel="modulepreload" href="src/render/hit.js">
+  <link rel="modulepreload" href="src/render/labels.js">
+  <link rel="modulepreload" href="src/render/lod.js">
+  <link rel="modulepreload" href="src/render/machines.js">
+  <link rel="modulepreload" href="src/render/molecules.js">
+  <link rel="modulepreload" href="src/render/particles.js">
+  <link rel="modulepreload" href="src/render/stage.js">
+  <link rel="modulepreload" href="src/render/tokens.js">
+  <link rel="modulepreload" href="src/render/view.js">
+  <link rel="modulepreload" href="src/scenes/bacterium.js">
+  <link rel="modulepreload" href="src/scenes/c3.js">
+  <link rel="modulepreload" href="src/scenes/c4.js">
+  <link rel="modulepreload" href="src/scenes/cam.js">
+  <link rel="modulepreload" href="src/scenes/cell.js">
+  <link rel="modulepreload" href="src/scenes/cloud.js">
+  <link rel="modulepreload" href="src/scenes/counterparts.js">
+  <link rel="modulepreload" href="src/scenes/geometry.js">
+  <link rel="modulepreload" href="src/scenes/human.js">
+  <link rel="modulepreload" href="src/scenes/parts.js">
+  <link rel="modulepreload" href="src/scenes/plant.js">
+  <link rel="modulepreload" href="src/scenes/sizes.js">
+  <link rel="modulepreload" href="src/scenes/yeast.js">
+  <link rel="modulepreload" href="src/sim/book.js">
+  <link rel="modulepreload" href="src/sim/choreography.js">
+  <link rel="modulepreload" href="src/sim/clock.js">
+  <link rel="modulepreload" href="src/sim/conditions.js">
+  <link rel="modulepreload" href="src/sim/engine.js">
+  <link rel="modulepreload" href="src/sim/gas.js">
+  <link rel="modulepreload" href="src/sim/life.js">
+  <link rel="modulepreload" href="src/sim/light.js">
+  <link rel="modulepreload" href="src/sim/molecules.js">
+  <link rel="modulepreload" href="src/sim/path.js">
+  <link rel="modulepreload" href="src/sim/snapshot.js">
+  <link rel="modulepreload" href="src/sim/stores.js">
+  <link rel="modulepreload" href="src/ui/beat.js">
+  <link rel="modulepreload" href="src/ui/copy.js">
+  <link rel="modulepreload" href="src/ui/counterparts.js">
+  <link rel="modulepreload" href="src/ui/grip.js">
+  <link rel="modulepreload" href="src/ui/inspector.js">
+  <link rel="modulepreload" href="src/ui/ledger.js">
+  <link rel="modulepreload" href="src/ui/notes.js">
+  <link rel="modulepreload" href="src/ui/parts.js">
+  <link rel="modulepreload" href="src/ui/rail.js">
+  <link rel="modulepreload" href="src/ui/station.js">
+  <link rel="modulepreload" href="src/ui/stepper.js">
+  <link rel="modulepreload" href="src/ui/tags.js">
+  <link rel="modulepreload" href="src/ui/tour.js">
+  <link rel="modulepreload" href="src/ui/transport.js">
+  <link rel="modulepreload" href="src/version.js">
+</head>
+<body>
+  <div class="app">
+    <div class="stage-wrap">
+      <canvas id="stage" aria-label="Schematic of a human cell. Drag to pan. Scroll or pinch to zoom."></canvas>
+      <div class="ledger-wrap">
+        <div class="ledger" id="ledger" aria-label="Ledger"></div>
+        <p class="ledger-note" id="ledger-note" role="status" hidden></p>
+      </div>
+      <div class="beat" id="beat" role="status" aria-live="polite" hidden></div>
+      <div class="endcard" id="endcard" role="dialog" aria-modal="false" aria-labelledby="endcard-title" hidden></div>
+      <div class="dock">
+      <div class="transport" role="toolbar" aria-label="Transport">
+        <button type="button" id="feed" class="swap" disabled><span class="on" data-state="continuous">Continuous</span><span data-state="one">One molecule</span></button>
+        <button type="button" id="reset">Reset</button>
+        <button type="button" id="fit">Fit</button>
+        <span class="sep" aria-hidden="true"></span>
+        <button type="button" id="back" class="icon" disabled aria-label="Step back" title="Step back (Left arrow)"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3.5 6 8l4.5 4.5" /><path d="M5 3.5v9" /></svg></button>
+        <button type="button" id="play" class="swap" disabled><span class="on" data-state="play">Play</span><span data-state="pause">Pause</span></button>
+        <button type="button" id="step" class="icon" disabled aria-label="Step forward" title="Step forward (Right arrow)"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 3.5 10 8l-4.5 4.5" /><path d="M11 3.5v9" /></svg></button>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="speed">
+          <button type="button" id="slower" disabled aria-label="Slower">−</button>
+          <span id="speed-label">1×</span>
+          <button type="button" id="faster" disabled aria-label="Faster">+</button>
+        </div>
+      </div>
+      <button type="button" id="follow" class="follow swap" aria-pressed="false" title="Keep the camera on the selected atom (P)"><span class="on" data-state="off">Follow atom</span><span data-state="on">Stop following</span></button>
+      </div>
+      <button type="button" id="replay" class="replay" title="Replay the welcome tour" aria-label="Replay the welcome tour">?</button>
+    </div>
+    <div class="rail-grip" id="rail-grip" role="separator" aria-orientation="vertical" aria-label="Resize the side panel" aria-controls="rail" tabindex="0" title="Drag to resize the panel. Double-click to reset."></div>
+    <aside class="rail" id="rail">
+      <h1 class="sr-only">metasim: interactive simulation of cellular respiration and photosynthesis</h1>
+      <div class="tabs" role="tablist" aria-label="Process">
+        <button type="button" role="tab" id="tab-respiration" data-tab="respiration" aria-selected="true" aria-controls="panel-respiration" tabindex="0">Cellular respiration</button>
+        <button type="button" role="tab" id="tab-photosynthesis" data-tab="photosynthesis" aria-selected="false" aria-controls="panel-photosynthesis" tabindex="-1">Photosynthesis</button>
+      </div>
+      <div class="panel" id="panel-respiration" role="tabpanel" aria-labelledby="tab-respiration">
+        <fieldset>
+          <legend>Organism</legend>
+          <label class="choice"><input type="radio" name="organism" value="human" checked><span>Human (<i>H. sapiens</i>)</span></label>
+          <label class="choice"><input type="radio" name="organism" value="yeast"><span>Yeast (<i>S. cerevisiae</i>)</span></label>
+          <label class="choice"><input type="radio" name="organism" value="bacterium"><span>Bacterium (<i>E. coli</i>)</span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Mode</legend>
+          <label class="choice"><input type="radio" name="mode" value="aerobic" checked><span>Aerobic Respiration</span></label>
+          <label class="choice"><input type="radio" name="mode" value="ferment"><span id="mode-label">Lactic Acid Fermentation</span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Guide</legend>
+          <label class="choice" title="Pause at each turning point and explain it"><input type="checkbox" id="narration" checked><span>Annotation</span></label>
+        </fieldset>
+        <fieldset id="conditions-respiration" class="conditions">
+          <legend>Condition</legend>
+          <!-- Filled from src/sim/conditions.js: None, then Poisons, Physiology, Mutations and Diseases. -->
+        </fieldset>
+      </div>
+      <div class="panel" id="panel-photosynthesis" role="tabpanel" aria-labelledby="tab-photosynthesis" hidden>
+        <fieldset>
+          <legend>Pathway</legend>
+          <label class="choice"><input type="radio" name="pathway" value="c3" checked><span>C3 (rice, wheat, soybean)</span></label>
+          <label class="choice"><input type="radio" name="pathway" value="c4"><span>C4 (maize, sugarcane)</span></label>
+          <label class="choice"><input type="radio" name="pathway" value="cam"><span>CAM (pineapple, cacti)</span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Guide</legend>
+          <label class="choice" title="Pause at each turning point and explain it"><input type="checkbox" id="narration-photosynthesis" checked><span>Annotation</span></label>
+        </fieldset>
+        <fieldset id="conditions-photosynthesis" class="conditions">
+          <legend>Condition</legend>
+          <!-- Filled from src/sim/conditions.js: None, then Environment and Herbicides. -->
+        </fieldset>
+      </div>
+      <section class="inspector" aria-live="polite">
+        <h2>Inspector</h2>
+        <div id="inspector-body"></div>
+      </section>
+      <details class="notes">
+        <summary>Model notes</summary>
+        <!-- Filled from src/ui/notes.js: this scene's notes, then All model notes. -->
+        <div id="notes-body"></div>
+      </details>
+      <p class="colophon"><span id="version"></span> · Suggestions or scientific errors? <a href="https://github.com/nico-chung/metasim/issues" target="_blank" rel="noopener">Report them on GitHub</a></p>
+    </aside>
+  </div>
+  <noscript><p>Atom-level simulation of cellular respiration and photosynthesis: glycolysis, the citric acid cycle, the electron transport chain and the Calvin cycle. It needs JavaScript.</p></noscript>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

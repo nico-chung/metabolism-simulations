@@ -1,0 +1,61 @@
+/* Starting swatches from PLAN §6.2.
+   --ink-soft and the outline tokens are darker than those first values so
+   secondary text and strokes meet WCAG AA on the pastel fills. The hues
+   stay in the same family. */
+:root {
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --paper: #FBFAF7;
+  --ink: #2F3437;
+  --ink-soft: #62696E;
+  --hairline: #D9D6CF;
+  --carbon: #9AA3AD;
+  --hydrogen: #FFFFFF;
+  --hydrogen-edge: #808890;
+  --oxygen: #F4A6A0;
+  --nitrogen: #A9B8F0;
+  --phosphorus: #F6C28B;
+  --sulfur: #F2DE8A;
+  --electron: #4FBFCF;
+  --proton: #7090CC;
+  --photon: #F7D154;
+  --cytosol: #F6F3EC;
+  --matrix: #FBEDE3;
+  --stroma: #EAF4E6;
+  --reservoir: #EFEAF7;
+  --vacuole: #EEF3FA;
+  --night: #22304F;
+  --membrane: #8C7D70;
+  --wall: #E4D3BF;
+  --enzyme: #E9E4DA;
+  --enzyme-edge: #847C70;
+  --carrier: #E3ECF1;
+  --carrier-edge: #6E8494;
+  --tag-1: #FF3D7F;
+  --tag-2: #0A9BE8;
+  --tag-3: #FF9F1C;
+  --sugar: #F3E0C4;
+  --gas: #D5E4F0;
+  --carrier-nad: #D9E6F4;
+  --carrier-coa: #F1E4B0;
+  --carrier-adenosine: #F6D9B8;
+  --carrier-q: #E4D9C6;
+  --carrier-cyt: #F1D0DA;
+  --carrier-fad: #DDEBCB;
+  --carrier-fd: #ECCDB9;
+  --bilayer: #E6DACD;
+  --zone-glycolysis: #8A5A12;
+  --zone-oxidation: #4A7420;
+  --zone-krebs: #2A7363;
+  --zone-oxphos: #5B4BA6;
+  --zone-ferment: #8A4A86;
+  --zone-pump: #3D6488;
+  --blocked: #9E2A2B;
+  --spark: #D9731A;
+  /* The welcome tour (M8.11): the dim over everything but the hole, the
+     hole's thin light ring, and the primary button. */
+  --scrim: #2F343770;
+  --spot-ring: #FFFFFF;
+  --primary: #2F3437;
+  --primary-ink: #FBFAF7;
+  color-scheme: light;
+}

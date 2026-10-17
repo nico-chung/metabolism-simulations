@@ -1,0 +1,924 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.45;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+.app {
+  --rail-w: 340px;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--rail-w);
+  height: 100%;
+  min-width: 960px;
+}
+
+/* The rail's left edge: a wide, invisible hit area over the hairline that
+   shows itself on hover, focus and drag. */
+.rail-grip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: var(--rail-w);
+  z-index: 3;
+  width: 10px;
+  margin-right: -5px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.rail-grip::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 4px;
+  width: 2px;
+  background: transparent;
+  transition: background-color 120ms;
+}
+
+.rail-grip:hover::after,
+.rail-grip.dragging::after,
+.rail-grip:focus-visible::after {
+  background: var(--membrane);
+}
+
+.rail-grip:focus-visible {
+  outline: none;
+}
+
+.stage-wrap {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: var(--paper);
+  user-select: none;
+}
+
+#stage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+
+#stage:active {
+  cursor: grabbing;
+}
+
+/* The ledger row and, under it, the short note after a restart. */
+.ledger-wrap {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  max-width: calc(100% - 28px);
+  pointer-events: none;
+}
+
+.ledger-wrap > * {
+  pointer-events: auto;
+}
+
+.ledger {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+}
+
+/* Every number sits in its own slot of four tabular digits (M8.9), so the
+   chips keep their width as the counts grow. */
+.chip {
+  display: inline-flex;
+  gap: 0.35em;
+  align-items: baseline;
+  padding: 4px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.chip .num,
+.chip .n3 {
+  display: inline-block;
+  min-width: 4ch;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.chip > .num {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.chip .n3 {
+  min-width: 3ch;
+}
+
+.chip .split {
+  font-size: 11px;
+}
+
+.ledger-arrow {
+  margin: 0 -2px;
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+.ledger-rule {
+  width: 1px;
+  height: 20px;
+  margin: 0 2px;
+  background: var(--hairline);
+}
+
+.ledger-note {
+  margin: 8px 0 0 4px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+
+.ledger-note[hidden] {
+  display: none;
+}
+
+.chip.meter {
+  align-items: center;
+  font-size: 12px;
+}
+
+.gauge {
+  width: 36px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--hairline);
+  overflow: hidden;
+}
+
+.gauge span {
+  display: block;
+  height: 100%;
+  background: var(--ink-soft);
+}
+
+.gauge-protons span {
+  background: var(--proton);
+}
+
+.gauge-reserve span {
+  background: var(--zone-glycolysis);
+}
+
+/* The transport and, beside it, the Follow atom pill, which fades in only
+   while an atom is selected. */
+.dock {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.dock > * {
+  pointer-events: auto;
+}
+
+.follow {
+  padding: 10px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  color: var(--ink);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+}
+
+.follow.shown {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease;
+}
+
+.follow:hover,
+.follow[aria-pressed="true"] {
+  background: var(--cytosol);
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+}
+
+.transport button {
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: var(--ink);
+}
+
+.transport button:disabled {
+  color: var(--ink-soft);
+}
+
+.transport button:not(:disabled):hover {
+  background: var(--cytosol);
+}
+
+.transport button:focus-visible {
+  outline-offset: -2px;
+}
+
+.dock .swap {
+  display: inline-grid;
+}
+
+.dock .swap > span {
+  grid-area: 1 / 1;
+  text-align: center;
+}
+
+.dock .swap > span:not(.on) {
+  visibility: hidden;
+}
+
+.transport .sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 6px 2px;
+  background: var(--hairline);
+}
+
+.speed {
+  display: flex;
+  align-items: center;
+}
+
+.speed button {
+  padding: 6px 8px;
+}
+
+#speed-label {
+  min-width: 3.2em;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+/* Rail text is a step smaller than the page's (§16 W10), and wraps only
+   where it reads well: paragraphs avoid orphans, short headings and the
+   equation balance their lines, and terms never break inside. */
+.rail {
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 14px 18px 18px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  border-left: 1px solid var(--hairline);
+  background: var(--paper);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 8px 6px 10px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  border-radius: 0;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  line-height: 1.25;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.tabs button[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+legend {
+  padding: 0;
+  margin-bottom: 2px;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.conditions .subhead {
+  margin: 6px 0 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.conditions .subhead[hidden],
+.choice[hidden] {
+  display: none;
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.choice > span {
+  min-width: 0;
+  text-wrap: pretty;
+}
+
+.choice:has(input:disabled) {
+  color: var(--ink-soft);
+  cursor: default;
+}
+
+.choice input {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 0.2em 0 0;
+  accent-color: var(--ink);
+}
+
+.inspector h2 {
+  margin: 0 0 8px;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.inspector {
+  font-size: 13px;
+}
+
+.inspector p {
+  margin: 0 0 8px;
+  text-wrap: pretty;
+}
+
+.inspector .eyebrow {
+  margin: 0 0 6px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  text-wrap: balance;
+}
+
+.inspector .compare {
+  margin-top: 12px;
+}
+
+/* Set like the eyebrow (the station's name) above it. */
+.inspector .compare-title {
+  margin: 0 0 6px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.inspector .equation {
+  margin-top: 4px;
+  text-wrap: balance;
+}
+
+.term {
+  white-space: nowrap;
+}
+
+.inspector .k {
+  display: inline-block;
+  min-width: 6.6em;
+  color: var(--ink-soft);
+}
+
+.inspector .ox {
+  margin: 2px 0 0;
+  font-size: 30px;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.inspector .ox-label,
+.inspector .hint,
+.inspector .history {
+  color: var(--ink-soft);
+  font-size: 11.5px;
+}
+
+.inspector .journey {
+  margin: 0 0 8px;
+  padding-left: 1.2em;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+
+.inspector .ox-label {
+  margin: 0 0 10px;
+}
+
+.inspector .swatch {
+  display: inline-block;
+  width: 0.72em;
+  height: 0.72em;
+  margin-right: 0.4em;
+  border-radius: 50%;
+  vertical-align: -0.08em;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 28%, transparent);
+}
+
+.notes {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+}
+
+.notes summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.notes ul {
+  margin: 4px 0 0;
+  padding-left: 1.1em;
+}
+
+.notes {
+  font-size: 12.5px;
+}
+
+.notes li {
+  margin: 0.45em 0;
+  text-wrap: pretty;
+}
+
+.notes li::marker {
+  color: var(--ink-soft);
+}
+
+.notes h3 {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.notes ul + h3,
+.notes summary + h3 {
+  margin-top: 12px;
+}
+
+/* The version and where to report errors (M8.13). */
+.colophon {
+  margin: -6px 0 0;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+
+.colophon a {
+  color: inherit;
+}
+
+.notes-all {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hairline);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.transport button.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 32px;
+  padding: 0;
+}
+
+.transport button.icon svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.beat {
+  position: absolute;
+  max-width: 300px;
+  padding: 10px 12px 10px 38px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.4;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.beat[hidden] {
+  display: none;
+}
+
+.beat .ring {
+  position: absolute;
+  left: 11px;
+  top: 12px;
+  width: 18px;
+  height: 18px;
+}
+
+.beat .ring circle {
+  fill: none;
+  stroke-width: 2;
+}
+
+.beat .ring .track {
+  stroke: var(--hairline);
+}
+
+.beat .ring .fill {
+  stroke: var(--ink-soft);
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.beat .choices {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.beat .choices button,
+.endcard .actions button {
+  padding: 5px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper);
+}
+
+.beat .choices button.primary,
+.endcard .actions button.primary {
+  border-color: var(--ink-soft);
+}
+
+.endcard {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(420px, calc(100% - 32px));
+  transform: translate(-50%, -50%);
+  padding: 18px 20px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.endcard[hidden] {
+  display: none;
+}
+
+.endcard h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.endcard p {
+  margin: 0 0 10px;
+}
+
+.endcard .summary {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.endcard .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.inspector .tagpair {
+  margin: 4px 0 8px;
+  padding: 4px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+}
+
+/* The Z-scheme in a light-reaction station card (M6 plan D5). */
+.zscheme {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 8px 0 4px;
+}
+
+.zscheme .z-axis {
+  stroke: var(--ink-soft);
+  stroke-width: 1;
+  fill: none;
+}
+
+.zscheme .z-fall,
+.zscheme .z-lift {
+  stroke: var(--hairline);
+  stroke-width: 2;
+}
+
+.zscheme .z-lift {
+  stroke-dasharray: 3 2;
+}
+
+.zscheme .z-on {
+  stroke: var(--zone-oxphos);
+  fill: var(--zone-oxphos);
+}
+
+.zscheme .z-dot {
+  fill: var(--ink-soft);
+}
+
+.zscheme .z-dot.z-on {
+  fill: var(--zone-oxphos);
+}
+
+.zscheme text {
+  font-size: 8.5px;
+  fill: var(--ink-soft);
+}
+
+.zscheme .z-name.z-on {
+  fill: var(--zone-oxphos);
+  font-weight: 600;
+  stroke: none;
+}
+
+.zscheme .z-light {
+  fill: var(--zone-glycolysis);
+}
+
+/* The respiration staircase's pumps, and the bacterium's end not in use (M8.6). */
+.zscheme .z-pump {
+  stroke: var(--ink-soft);
+  stroke-width: 1;
+  fill: none;
+}
+
+.zscheme .z-pump-label {
+  font-size: 7.5px;
+}
+
+.zscheme .z-off {
+  opacity: 0.4;
+}
+
+.zscheme line.z-off {
+  stroke-dasharray: 2 2;
+}
+
+/* The ? button that replays the welcome tour, in the transport's style. */
+.replay {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.replay:hover {
+  background: var(--cytosol);
+}
+
+/* The welcome card and the tour (M8.11). The scrim is one path with holes
+   cut in it (even-odd), so the dim catches clicks and the hole does not. */
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.tour[hidden] {
+  display: none;
+}
+
+.tour svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.tour .scrim {
+  fill: var(--scrim);
+  fill-rule: evenodd;
+  pointer-events: visiblePainted;
+}
+
+.tour .ring {
+  fill: none;
+  stroke: var(--spot-ring);
+  stroke-width: 1.5;
+}
+
+.tour-card {
+  position: absolute;
+  width: 320px;
+  padding: 12px 16px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.45;
+  pointer-events: auto;
+}
+
+.tour-card.welcome {
+  width: min(440px, calc(100% - 32px));
+  padding: 22px 24px 18px;
+  font-size: 15px;
+}
+
+.tour-card h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.tour-card p {
+  margin: 4px 0 0;
+}
+
+.tour-card .count {
+  margin-bottom: 4px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+
+.tour-card .close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tour-card .close:hover {
+  background: var(--cytosol);
+}
+
+.tour-card .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tour-card .actions button {
+  padding: 6px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--paper);
+  cursor: pointer;
+}
+
+.tour-card .actions button:not(:disabled):hover {
+  background: var(--cytosol);
+}
+
+.tour-card .actions button:disabled {
+  color: var(--ink-soft);
+  cursor: default;
+}
+
+.tour-card .actions button.primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.tour-card .actions button.primary:hover {
+  background: var(--primary);
+  opacity: 0.88;
+}
+
+/* Each new card fades in while it glides to its place (M8.11). */
+.tour-card.entering {
+  animation: tour-in 0.6s ease both;
+}
+
+@keyframes tour-in {
+  from {
+    opacity: 0;
+  }
+}
