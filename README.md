@@ -4,7 +4,7 @@ An interactive, atom-level simulation of cellular respiration and photosynthesis
 Tag a single atom, press play, and follow it through the pathway, reaction by
 reaction.
 
-**Open it: https://nico-chung.github.io/metasim/** · Version 1.0
+**Open it: https://nico-chung.github.io/metasim/** · Version 1.1
 
 ![A tagged glucose carbon enters a human cell and is followed through glycolysis, with the guide's card at each enzyme](docs/metasim.gif)
 

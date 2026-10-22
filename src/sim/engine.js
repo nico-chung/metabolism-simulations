@@ -381,6 +381,7 @@ export function step(world, dt = STEP, keep = null) {
   feedStores(world);
   for (const def of scene.stations) advanceStation(world, def, world.stations[def.id], dt);
   releaseStuckShuttle(world);
+  releaseIdleDocks(world);
   for (const def of scene.stations) {
     const station = world.stations[def.id];
     if (station.phase === 'idle') tryStart(world, def, station);
@@ -771,6 +772,10 @@ function wantsCarrier(world, def, station, dockName, loopId) {
   // shuttle's tap comes first, so it only sees what the shuttle let pass.
   const dock = def.docks?.[dockName];
   if (dock?.when === 'substrate') return substrateComing(world, def);
+  // A dock with `idle` (the cyclic route's plastoquinone, v1.1) keeps a
+  // carrier ready only while its station is in use: it has acted (taken an
+  // electron or fired) in the last `idle` seconds, or its store is full.
+  if (dock?.idle) return inUse(world, def, station, dock.idle);
   // NADP⁺ reductase takes ferredoxin only while it holds NADP⁺, so when
   // NADPH backs up, ferredoxin passes on to the cyclic route (M6 plan L9).
   if (dock?.requires && !station.docks[dock.requires]?.slots.some((slot) => slot && !slot.glide)) return false;
@@ -1829,6 +1834,37 @@ export function demandPer(world) {
   const params = scene.params ?? {};
   if (world.patch?.demand === 'ferment') return params.fermentDemand ?? 0.05;
   return params.demand ?? (30 / PARAMS.takt);
+}
+
+function inUse(world, def, station, idle) {
+  return station.store.length >= (def.store?.cap ?? Infinity) || world.time - (station.lastFired ?? -Infinity) < idle;
+}
+
+// An idle dock's carrier goes back to its loop once the station has not been
+// in use for that long (v1.1). In a C3 leaf the cyclic route can rest for
+// minutes, and the plastoquinone it held looked stuck; in C4 and CAM by day
+// the route acts every few seconds and keeps its carrier.
+function releaseIdleDocks(world) {
+  for (const def of scene.stations) {
+    if (!def.docks) continue;
+    const station = world.stations[def.id];
+    if (station.phase !== 'idle') continue;
+    for (const [name, dockDef] of Object.entries(def.docks)) {
+      if (!dockDef.idle || inUse(world, def, station, dockDef.idle)) continue;
+      const slots = station.docks[name].slots;
+      slots.forEach((slot, i) => {
+        if (!slot?.loop || slot.glide) return;
+        const path = LOOPS[slot.loop].path;
+        const s = (dockDef.taps[slot.loop] + 14 * (i + 1)) % path.length;
+        // It eases from the dock onto the loop rather than jumping.
+        const from = slotPoint(def, name, i, slot);
+        pointAt(path, s, scratch);
+        world.loops[slot.loop].items.push({ mols: [slot.mol], s, ph: null, settle: { x: from.x - scratch.x, y: from.y - scratch.y, t: 0 } });
+        slots[i] = null;
+        markFlux(world, slot.loop);
+      });
+    }
+  }
 }
 
 // Frees NADH an idle shuttle holds but cannot pass on (yeast aerobic needs it).

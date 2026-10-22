@@ -152,6 +152,21 @@ export function bindRail(onChange) {
   });
 
   document.getElementById('rail').addEventListener('change', publish);
+  // A control chosen with the mouse hands the keys back to the stage, so
+  // Space, Left and Right play and step again (v1.1). Before, Right after a
+  // click on a condition chose the next condition, and after a click on a
+  // tab switched tabs. A choice made with the keyboard (detail 0) keeps its
+  // focus.
+  document.getElementById('rail').addEventListener('click', (event) => {
+    if (event.detail === 0) return;
+    const release = () => {
+      const focused = document.activeElement;
+      if (focused?.closest('#rail') && focused.matches('input, [role="tab"], summary')) focused.blur();
+    };
+    // Now for a tab or a summary; after the click for a label's input.
+    release();
+    setTimeout(release);
+  });
   syncControls();
   renderInspector(read());
 
@@ -187,7 +202,7 @@ export function renderInspector(state) {
     p.textContent = paragraph;
     body.append(p);
   }
-  if (view.equation) body.append(equationLine(view.equation));
+  for (const line of view.equations ?? []) body.append(equationLine(line));
 }
 
 // An equation breaks only between its terms, never inside "6 O₂" or

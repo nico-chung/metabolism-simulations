@@ -84,7 +84,7 @@ export const NOTES = [
   { topic: 'Fermentation', scenes: ['human', 'yeast'], text: 'When cell work runs short of ATP the glucose port opens sooner and lets more sugar in at once. That is this model’s Pasteur effect. A yeast cell can live on the 2 ATP of fermentation. A human cell cannot meet its usual demand that way.' },
   { topic: 'Fermentation', scenes: ['human', 'yeast'], text: 'Lactate leaves through a transporter in the plasma membrane. Ethanol diffuses out. Yeast’s fermentation CO₂ rises in the cytosol, beside the mitochondrion, and leaves through the top of the cell.' },
   { topic: 'Fermentation', scenes: ['human'], text: 'Fermentation is shown running steadily. A real muscle cell can sustain it only during brief, intense exertion.' },
-  { topic: 'Fermentation', scenes: ['yeast'], text: 'With air, this yeast still makes some ethanol. Its demand is low enough that the proton gradient fills and the chain backs up, so pyruvate spills to fermentation. That is the model’s version of the Crabtree effect.' },
+  { topic: 'Fermentation', scenes: ['yeast'], text: 'With air, this yeast still turns most of its glucose into ethanol. Its demand is low enough that the proton gradient fills and the chain backs up, so pyruvate spills to fermentation. That is the model’s version of the Crabtree effect.' },
 
   // The bacterium
   { topic: 'The bacterium', scenes: ['bacterium'], text: 'The bacterial chain is a simplified textbook version, and its citric acid cycle does not change when nitrate is the acceptor. One quinone pool is drawn, although E. coli uses ubiquinone in air and menaquinone without it.' },

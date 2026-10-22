@@ -330,7 +330,9 @@ const KEYS = {
 };
 
 window.addEventListener('keydown', (event) => {
-  if (event.target.closest('input, textarea, select, summary, [role="tablist"]')) return;
+  // The rail's grip uses Left and Right to resize the rail (v1.1: they also
+  // stepped the simulation).
+  if (event.target.closest?.('input, textarea, select, summary, [role="tablist"], [role="separator"]')) return;
   // The welcome and the tour keep the keys from the simulation behind them.
   if (tour.open) {
     if (event.key === 'Escape') tour.close();
@@ -573,11 +575,13 @@ function checkWaiting() {
   ]);
 }
 
+// Both restarts keep the condition, as the Waiting card's do (v1.1): before,
+// a journey followed under PDH deficiency restarted in a healthy cell.
 function showEnd(ending) {
   const restartTag = root;
   beat.showEnd({ title: ending.title, text: ending.text, summary: journeySummary(journey) }, [
-    { label: 'Restart with the same tag', run: () => resetWorld(restartTag) },
-    { label: 'Tag something else', run: () => resetWorld(null) },
+    { label: 'Restart with the same tag', run: () => resetWorld(restartTag, true) },
+    { label: 'Tag something else', run: () => resetWorld(null, true) },
     {
       label: 'Keep watching',
       run: () => {

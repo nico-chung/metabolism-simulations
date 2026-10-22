@@ -74,7 +74,10 @@ function arc(fromDeg, toDeg) {
 
 // The light reactions on the thylakoid strip (M6, compact since M6.5 P4),
 // shifted right by dx. C3 draws them at dx 0; C4's mesophyll further right.
-export function lightReactions(dx = 0) {
+// `cyclicIdle` (C3 only, v1.1): seconds after which an unused cyclic route
+// hands its plastoquinone back to the loop. C4 and CAM use the route every
+// few seconds by day, and their tuned runs stay as they were.
+export function lightReactions(dx = 0, { cyclicIdle = null } = {}) {
   const PSII = STRIP.PSII + dx;
   const CYCLIC_X = STRIP.CYCLIC_X + dx;
   const B6F = STRIP.B6F + dx;
@@ -172,7 +175,9 @@ export function lightReactions(dx = 0) {
       ],
       docks: {
         fd: dock({ x: CYCLIC_X - 6, y: 326 }, 'fdr', ['fd']),
-        pq: dock({ x: CYCLIC_X - 14, y: STRIP_Y + 7 }, 'pq', ['pq']),
+        // In C3, held only while the route is in use: there it can rest for
+        // minutes, and its plastoquinone looked stuck (v1.1).
+        pq: dock({ x: CYCLIC_X - 14, y: STRIP_Y + 7 }, 'pq', ['pq'], cyclicIdle ? { idle: cyclicIdle } : {}),
       },
     },
     {
@@ -506,7 +511,7 @@ export function calvinCycle() {
 }
 
 export function buildC3() {
-  const strip = lightReactions();
+  const strip = lightReactions(0, { cyclicIdle: 15 });
   const calvin = calvinCycle();
   const { belts, pgpStation, hexose } = calvin;
 

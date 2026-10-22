@@ -24,6 +24,17 @@ export const GROUPS = [
   ['weed', 'Mutations', 'photosynthesis'],
 ];
 
+// The net equations the inspector shows (v1.1). A condition states what the
+// cell does instead of the mode's equation: fermentation's when the chain
+// stops, a smaller yield when protons leak, and both routes when only part
+// of the glucose is oxidized. Each "about N ATP" a condition quotes is this
+// model's yield per glucose, and test/conditions.test.js measures it.
+export const EQUATIONS = {
+  aerobic: 'C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + about 32 ATP',
+  lactic: 'C₆H₁₂O₆ + 2 ADP + 2 Pᵢ → 2 lactate + 2 ATP + 2 H₂O',
+  ethanol: 'C₆H₁₂O₆ + 2 ADP + 2 Pᵢ → 2 ethanol + 2 CO₂ + 2 ATP',
+};
+
 export const CONDITIONS = {
   none: { label: 'None', scenes: ['human', 'yeast', 'bacterium', 'c3', 'c4', 'cam'] },
   cyanide: {
@@ -31,11 +42,14 @@ export const CONDITIONS = {
     label: 'Cyanide',
     scenes: ['human', 'yeast', 'bacterium'],
     off: ['complex4'],
-    text: 'Cyanide blocks Complex IV, so the chain cannot pass electrons to oxygen.',
+    text: 'Cyanide blocks Complex IV, so the chain cannot pass electrons to oxygen. Only fermentation still makes ATP, 2 per glucose.',
+    equation: EQUATIONS.lactic,
     death: 'Complex IV is blocked, so the chain can no longer feed ATP synthase. Fermentation is not enough to meet this cell’s demand.',
     by: {
+      yeast: { equation: EQUATIONS.ethanol },
       bacterium: {
-        text: 'Cyanide blocks cytochrome bo₃, the terminal oxidase, so the chain cannot pass electrons to oxygen.',
+        text: 'Cyanide blocks cytochrome bo₃, the terminal oxidase, so the chain cannot pass electrons to oxygen. This bacterium has no fermentation in this model, so glycolysis stops once its NAD⁺ is used up.',
+        equation: null,
         death: 'With bo₃ blocked, NADH could not be reoxidized and glycolysis stopped too. This bacterium has no fermentation in this model, so it ran out of ATP.',
       },
     },
@@ -45,7 +59,9 @@ export const CONDITIONS = {
     label: 'Oligomycin',
     scenes: ['human', 'yeast'],
     off: ['synthase'],
-    text: 'Oligomycin blocks the proton channel of ATP synthase, the Fₒ part, which is named for it.',
+    text: 'Oligomycin blocks the proton channel of ATP synthase, the Fₒ part, which is named for it. The gradient fills, the chain stops, and only fermentation still makes ATP, 2 per glucose.',
+    equation: EQUATIONS.lactic,
+    by: { yeast: { equation: EQUATIONS.ethanol } },
     death: 'ATP synthase can no longer let protons back in, so the gradient fills and the pumps stop. The cell runs out of ATP.',
   },
   dnp: {
@@ -54,10 +70,17 @@ export const CONDITIONS = {
     scenes: ['human', 'yeast', 'bacterium'],
     modes: ['aerobic', 'nitrate'],
     leak: { kind: 'dnp', rate: 200, heat: 1 },
-    text: 'DNP carries protons back across the inner membrane, and the energy leaves as heat.',
+    text: 'DNP carries protons back across the inner membrane, and the energy leaves as heat. Each glucose oxidized yields only the 4 ATP that glycolysis and the citric acid cycle make.',
+    // By mode: the bacterium also takes DNP on nitrate.
+    equation: {
+      aerobic: 'C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + 4 ATP + heat',
+      nitrate: 'C₆H₁₂O₆ + 12 NO₃⁻ → 6 CO₂ + 6 H₂O + 12 NO₂⁻ + 4 ATP + heat',
+    },
     by: {
+      // Yeast lives through DNP by fermenting about half its glucose.
+      yeast: { equation: ['C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + 4 ATP + heat', EQUATIONS.ethanol] },
       bacterium: {
-        text: 'DNP carries protons back from the periplasm across the inner membrane, and the energy leaves as heat.',
+        text: 'DNP carries protons back from the periplasm across the inner membrane, and the energy leaves as heat. Each glucose oxidized yields only the 4 ATP that glycolysis and the citric acid cycle make.',
         death: 'Protons leaked back without making ATP. Glycolysis and the cycle alone could not keep up.',
       },
     },
@@ -69,7 +92,9 @@ export const CONDITIONS = {
     scenes: ['human'],
     leak: { kind: 'ucp1', rate: 0.55, heat: 1 },
     eyebrow: 'Brown Fat',
-    text: 'UCP1 lets protons through the inner membrane of brown fat. The cell releases the energy as heat.',
+    text: 'UCP1 lets protons through the inner membrane of brown fat. The cell releases the energy as heat, and each glucose yields about 26 ATP instead of about 32.',
+    equation: 'C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + about 26 ATP + heat',
+    yield: 26,
     death: 'The cell ran out of ATP.',
   },
   pdhd: {
@@ -78,7 +103,10 @@ export const CONDITIONS = {
     scenes: ['human'],
     rate: { pdh: 0.03 },
     eyebrow: 'PDH Deficiency',
-    text: 'A mutation in PDHA1, on the X chromosome, leaves pyruvate dehydrogenase working at a fraction of its rate. Pyruvate backs up at the fork and becomes lactate even with oxygen present: congenital lactic acidosis.',
+    text: 'A mutation in PDHA1, on the X chromosome, leaves pyruvate dehydrogenase working at a fraction of its rate. Pyruvate backs up at the fork and becomes lactate even with oxygen present: congenital lactic acidosis. In this model about 6 glucose in 10 become lactate, so the cell makes about 13 ATP per glucose.',
+    equation: [EQUATIONS.aerobic, EQUATIONS.lactic],
+    yield: 13,
+    fermented: 0.6,
   },
   lhon: {
     group: 'mutation',
@@ -86,7 +114,10 @@ export const CONDITIONS = {
     scenes: ['human'],
     rate: { complex1: 0.17 },
     eyebrow: 'LHON',
-    text: 'Leber hereditary optic neuropathy. A mutation in mitochondrial DNA, most often in the Complex I gene MT-ND4, slows Complex I. NADH backs up, electrons from succinate still enter at Complex II, and each glucose yields less ATP. In patients the optic nerve, with the highest demand, fails first.',
+    text: 'Leber hereditary optic neuropathy. A mutation in mitochondrial DNA, most often in the Complex I gene MT-ND4, slows Complex I. NADH backs up, electrons from succinate still enter at Complex II, and some pyruvate becomes lactate: the cell makes about 20 ATP per glucose. In patients the optic nerve, with the highest demand, fails first.',
+    equation: [EQUATIONS.aerobic, EQUATIONS.lactic],
+    yield: 20,
+    fermented: 0.4,
   },
   merrf: {
     group: 'mutation',
@@ -94,7 +125,10 @@ export const CONDITIONS = {
     scenes: ['human'],
     rate: { complex1: 0.2, complex3: 0.2, complex4: 0.2, synthase: 0.2 },
     eyebrow: 'MERRF',
-    text: 'Myoclonic epilepsy with ragged-red fibres. A mitochondrial tRNA mutation (MT-TK) leaves every protein made from mitochondrial DNA in short supply: parts of Complexes I, III and IV and of ATP synthase. The whole chain runs slow. Mitochondrial DNA comes from the mother, so this is inherited through her.',
+    text: 'Myoclonic epilepsy with ragged-red fibres. A mitochondrial tRNA mutation (MT-TK) leaves every protein made from mitochondrial DNA in short supply: parts of Complexes I, III and IV and of ATP synthase. The whole chain runs slow, about half the glucose becomes lactate, and the cell makes about 18 ATP per glucose. Mitochondrial DNA comes from the mother, so this is inherited through her.',
+    equation: [EQUATIONS.aerobic, EQUATIONS.lactic],
+    yield: 18,
+    fermented: 0.5,
   },
   petite: {
     group: 'mutation',
@@ -103,8 +137,7 @@ export const CONDITIONS = {
     absent: ['complex3', 'complex4', 'synthase'],
     oxygen: false,
     eyebrow: 'Petite (ρ⁰)',
-    // What the cell actually does, in place of the mode's equation.
-    equation: 'C₆H₁₂O₆ + 2 ADP + 2 Pᵢ → 2 ethanol + 2 CO₂ + 2 ATP',
+    equation: EQUATIONS.ethanol,
     text: 'This yeast has lost its mitochondrial DNA. Without it there is no cytochrome b for Complex III, no core of Complex IV, and no Fₒ for ATP synthase. The cell takes up no oxygen and lives by fermenting, even in air. Its colonies are small, hence the name.',
   },
   ischemia: {
@@ -113,7 +146,8 @@ export const CONDITIONS = {
     scenes: ['human'],
     oxygen: false,
     eyebrow: 'Ischemia',
-    text: 'Blood flow has stopped, as in a heart attack or a stroke, so no oxygen arrives. The cell still needs as much ATP as before. Choose None before the cell dies, and oxygen returns.',
+    text: 'Blood flow has stopped, as in a heart attack or a stroke, so no oxygen arrives. Lactate fermentation makes only 2 ATP per glucose, but the cell still needs as much ATP as before. Choose None before the cell dies, and oxygen returns.',
+    equation: EQUATIONS.lactic,
     death: 'Without oxygen the chain stopped. Glycolysis and lactate alone could not meet the demand of a heart or brain cell.',
     resetWithout: 'Reset with blood flow restored',
   },
@@ -123,7 +157,10 @@ export const CONDITIONS = {
     scenes: ['human'],
     rate: { pdh: 0.04, akgdh: 0.1 },
     eyebrow: 'Beriberi',
-    text: 'Thiamine (vitamin B₁) deficiency. Thiamine pyrophosphate is a cofactor of pyruvate dehydrogenase and α-ketoglutarate dehydrogenase, so both slow down. Pyruvate turns to lactate even with oxygen present.',
+    text: 'Thiamine (vitamin B₁) deficiency. Thiamine pyrophosphate is a cofactor of pyruvate dehydrogenase and α-ketoglutarate dehydrogenase, so both slow down. Pyruvate turns to lactate even with oxygen present, and the cell makes about 29 ATP per glucose.',
+    equation: [EQUATIONS.aerobic, EQUATIONS.lactic],
+    yield: 29,
+    fermented: 0.1,
   },
   darkness: {
     group: 'environment',
@@ -132,6 +169,8 @@ export const CONDITIONS = {
     modes: ['light'],
     light: false,
     eyebrow: 'Darkness',
+    // No light, so no photosynthesis to write an equation for.
+    equation: null,
     text: 'No photons reach the photosystems. Without light no water is split, and no ATP or NADPH is made, so the Calvin cycle runs down and stops. The plant lives on the sugar it stored in the light, as it does every night. Only darkness that outlasts the store starves the cell.',
     death: 'The darkness outlasted the plant’s stored sugar. With no light, no ATP or NADPH was made, the Calvin cycle stayed stopped, and the cell starved. The model compresses this: a real plant can last days in the dark.',
     resetWithout: 'Reset with light',
@@ -166,6 +205,7 @@ export const CONDITIONS = {
     modes: ['light'],
     off: ['psii'],
     eyebrow: 'DCMU',
+    equation: null,
     text: 'DCMU (diuron) is a herbicide. It binds photosystem II where plastoquinone should, so electrons from water cannot leave. Photosystem II gives its light off as heat and fluorescence, no O₂ is made, and the Calvin cycle runs out of NADPH.',
     death: 'DCMU blocked photosystem II, so no electrons came from water and the Calvin cycle stopped. The cell starved when the plant’s stored sugar ran out. The model compresses this: a sprayed plant takes days to die.',
   },
@@ -188,6 +228,16 @@ export function conditionCopy(id, sceneId) {
   const entry = CONDITIONS[id];
   if (!entry) return null;
   return { ...entry, ...(entry.by?.[sceneId] ?? {}) };
+}
+
+// The equation lines a condition shows in place of the mode's (v1.1): the
+// mode's own when it says nothing, none when it says null, one line or
+// several, or a choice by mode.
+export function conditionEquations(entry, mode, fallback) {
+  const own = entry && 'equation' in entry ? entry.equation : undefined;
+  const chosen = own && typeof own === 'object' && !Array.isArray(own) ? own[mode] : own;
+  const lines = chosen === undefined ? fallback : chosen;
+  return [lines].flat().filter(Boolean);
 }
 
 export function conditionApplies(id, sceneId, mode) {

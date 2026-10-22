@@ -1,4 +1,4 @@
-import { conditionCopy } from '../sim/conditions.js';
+import { EQUATIONS, conditionCopy, conditionEquations } from '../sim/conditions.js';
 
 // Names of processes standing alone as labels are in Title Case (§16 D9);
 // sentences keep textbook lower case.
@@ -9,30 +9,32 @@ const RESPIRATION = {
       paragraphs: [
         'A human cell oxidizes glucose completely. Electrons from food reach oxygen, and the proton gradient drives ATP synthase.',
       ],
-      equation: 'C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + about 32 ATP',
+      equation: EQUATIONS.aerobic,
     },
     lactic: {
       eyebrow: 'Human · Lactic Acid Fermentation',
       paragraphs: [
         'With no oxygen the chain stops, NADH backs up in the mitochondrion, and pyruvate takes the other branch at the fork. Lactate dehydrogenase reduces it to lactate so NAD⁺ returns to glycolysis. The model sustains this indefinitely; a real muscle cell can sustain it only during brief, intense exertion.',
       ],
-      equation: 'C₆H₁₂O₆ + 2 ADP + 2 Pᵢ → 2 lactate + 2 ATP + 2 H₂O',
+      equation: EQUATIONS.lactic,
     },
   },
   yeast: {
     aerobic: {
       eyebrow: 'Yeast · Aerobic Respiration',
+      // Most of this yeast's glucose becomes ethanol even in air (M4, the
+      // model's Crabtree effect), so it shows both routes.
       paragraphs: [
-        'Baker’s yeast, Saccharomyces cerevisiae, is a eukaryote with a nucleus, a cell wall and mitochondria. In air it oxidizes glucose completely; its chain is drawn as in the human cell.',
+        'Baker’s yeast, Saccharomyces cerevisiae, is a eukaryote with a nucleus, a cell wall and mitochondria. In air it can oxidize glucose completely; its chain is drawn as in the human cell. When glucose is plentiful, most of it still becomes ethanol: the Crabtree effect.',
       ],
-      equation: 'C₆H₁₂O₆ + 6 O₂ → 6 CO₂ + 6 H₂O + about 32 ATP',
+      equation: [EQUATIONS.aerobic, EQUATIONS.ethanol],
     },
     ethanol: {
       eyebrow: 'Yeast · Ethanol Fermentation',
       paragraphs: [
         'With no oxygen the mitochondrion stops and pyruvate takes the other branch at the fork. It loses a carbon as CO₂ and becomes acetaldehyde, which is reduced to ethanol so NAD⁺ returns to glycolysis. A yeast cell can survive on these 2 ATP per glucose.',
       ],
-      equation: 'C₆H₁₂O₆ + 2 ADP + 2 Pᵢ → 2 ethanol + 2 CO₂ + 2 ATP',
+      equation: EQUATIONS.ethanol,
     },
   },
 };
@@ -80,20 +82,27 @@ const PATHWAYS = {
   },
 };
 
+// The inspector's resting card: an eyebrow, paragraphs, and the equation
+// lines of what the cell does under its condition (none, one or two).
 export function describeSelection(state) {
   if (state.tab === 'photosynthesis') {
     const pathway = PATHWAYS[state.pathway] ?? PATHWAYS.c3;
     const entry = conditionCopy(state.condition, state.pathway);
-    if (!entry?.text) return pathway;
-    return { ...pathway, eyebrow: entry.eyebrow ? `${pathway.eyebrow} · ${entry.eyebrow}` : pathway.eyebrow, paragraphs: [...pathway.paragraphs, entry.text] };
+    if (!entry?.text) return { ...pathway, equations: [pathway.equation] };
+    return {
+      ...pathway,
+      eyebrow: entry.eyebrow ? `${pathway.eyebrow} · ${entry.eyebrow}` : pathway.eyebrow,
+      paragraphs: [...pathway.paragraphs, entry.text],
+      equations: conditionEquations(entry, state.mode, pathway.equation),
+    };
   }
   const book = RESPIRATION[state.organism] ?? RESPIRATION.human;
   const view = book[state.mode] ?? book.aerobic;
   const entry = conditionCopy(state.condition, state.organism);
-  if (!entry?.text) return view;
+  if (!entry?.text) return { ...view, equations: [view.equation].flat() };
   const [organism, ...rest] = view.eyebrow.split(' · ');
   const eyebrow = entry.eyebrow ? [organism, entry.eyebrow, ...rest].join(' · ') : view.eyebrow;
-  return { ...view, eyebrow, paragraphs: [...view.paragraphs, entry.text], equation: entry.equation ?? view.equation };
+  return { ...view, eyebrow, paragraphs: [...view.paragraphs, entry.text], equations: conditionEquations(entry, state.mode, view.equation) };
 }
 
 export function pathwayTitle(pathway) {

@@ -30,7 +30,8 @@ const Z = [
   { id: 'P700', x: 138, y: 84, stations: ['psi'] },
   { id: 'P700*', x: 154, y: 8, stations: ['psi'] },
   { id: 'Fd', x: 182, y: 24, stations: ['psi', 'fnr'] },
-  { id: 'NADP⁺', x: 210, y: 40, stations: ['fnr'] },
+  // Under its dot: beside it, the name ran past the diagram's right edge.
+  { id: 'NADP⁺', x: 210, y: 40, stations: ['fnr'], name: 'below' },
 ];
 const LIFTS = [[0, 1], [5, 6]];
 
@@ -98,7 +99,7 @@ export function chainStaircase(sceneId, stationId, mode) {
 function energyDiagram({ steps, lifts = [], stationId, label }) {
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('viewBox', '-26 -4 256 118');
+  svg.setAttribute('viewBox', '-26 -6 256 120');
   svg.setAttribute('class', 'zscheme');
   svg.setAttribute('role', 'img');
   svg.setAttribute('aria-label', label);
@@ -111,7 +112,9 @@ function energyDiagram({ steps, lifts = [], stationId, label }) {
   };
   el('line', { x1: -14, y1: 104, x2: -14, y2: 2, class: 'z-axis' });
   el('path', { d: 'M -17 8 L -14 2 L -11 8', class: 'z-axis' });
-  el('text', { x: -20, y: 54, class: 'z-label', transform: 'rotate(-90 -20 54)', 'text-anchor': 'middle' }, 'Energy of the electron (higher is more energy)');
+  // The arrowhead says that higher is more energy; the label must fit the
+  // axis, which is about 100 units long.
+  el('text', { x: -19, y: 54, class: 'z-label', transform: 'rotate(-90 -19 54)', 'text-anchor': 'middle' }, 'Energy of the electron');
   const index = new Map(steps.map((step, i) => [step.id, i]));
   const lit = (step) => step.stations.includes(stationId);
   const faint = (step) => (step.off ? ' z-off' : '');
@@ -143,7 +146,9 @@ function energyDiagram({ steps, lifts = [], stationId, label }) {
   for (const step of steps) {
     const on = lit(step);
     el('circle', { cx: step.x, cy: step.y, r: on ? 3.2 : 2.4, class: `${on ? 'z-dot z-on' : 'z-dot'}${faint(step)}` });
-    const name = step.name === 'left' ? { x: step.x - 5, y: step.y + 3, 'text-anchor': 'end' } : { x: step.x + 4, y: step.y - 4 };
+    const name = step.name === 'left' ? { x: step.x - 5, y: step.y + 3, 'text-anchor': 'end' }
+      : step.name === 'below' ? { x: step.x, y: step.y + 11, 'text-anchor': 'middle' }
+        : { x: step.x + 4, y: step.y - 4 };
     el('text', { ...name, class: `${on ? 'z-name z-on' : 'z-name'}${faint(step)}` }, step.id);
   }
   return svg;
